@@ -8,9 +8,9 @@ from passlib.handlers.sha2_crypt import sha256_crypt
 
 class RegisterForm(Form):
     name = StringField(label="İsim Soyisim", validators=[
-                       validators.Length(min=4, max=25)])
+                       validators.Length(min=4, max=25, message="Bu alan 4 ila 25 karakter uzunluğunda olmalıdır...")])
     username = StringField(label="Kullanıcı Adı", validators=[
-                           validators.Length(min=5, max=35)])
+                           validators.Length(min=5, max=35, message="Bu alan 5 ila 35 karakter uzunluğunda olmalıdır...")])
     email = StringField(label="Email Adresi", validators=[validators.Email(
         message="Lütfen Geçerli Bir Email Adresi Girin...")])
     password = PasswordField(label="Parola", validators=[
@@ -52,7 +52,18 @@ def detail(id):
 def register():
     form = RegisterForm(request.form)
     if request.method == "POST" and form.validate():
-        
+        name = form.name.data
+        username = form.username.data
+        email = form.email.data
+        password = sha256_crypt.encrypt(form.password.data)
+
+        cursor = mysql.connection.cursor()
+
+        sorgu = "INSERT into users(name,email,username,password) VALUES(%s,%s,%s,%s)"
+
+        cursor.execute(sorgu, (name, email, username, password))
+        mysql.connection.commit()
+        cursor.close()
         return redirect(location=url_for("index"))
     else:
 
