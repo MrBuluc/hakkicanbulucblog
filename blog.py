@@ -4,16 +4,20 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.handlers.sha2_crypt import sha256_crypt
 from functools import wraps
 
-#User Login Decorator
+# User Login Decorator
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "logged_in" in session:
             return f(*args, **kwargs)
         else:
-            flash(message="Bu sayfayı görüntülemek için lütfen giriş yapın...", category="danger")
-            return redirect(location=url_for("login"))   
+            flash(
+                message="Bu sayfayı görüntülemek için lütfen giriş yapın...", category="danger")
+            return redirect(location=url_for("login"))
     return decorated_function
+
 # User Register Form
 class RegisterForm(Form):
     name = StringField(label="İsim Soyisim", validators=[
@@ -123,14 +127,60 @@ def login():
             return redirect(location="login")
     return render_template("login.html", form=form)
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(location=url_for("index"))
 
+
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html")    
+    return render_template("dashboard.html")
+
+
+@app.route("/addproject", methods=["GET", "POST"])
+def addproject():
+    form = ArticleForm(request.form)
+    if request.method == "POST" and form.validate():
+        title = form.title.data
+        content = form.content.data
+
+        cursor = mysql.connection.cursor()
+
+        sorgu = "INSERT INTO projects(title, author, content) VALUES(%s,%s,%s)"
+
+        cursor.execute(sorgu, (title, session["username"], content))
+
+        mysql.connection.commit()
+
+        cursor.close()
+
+        flash(message="Proje Başarıyla Eklendi", category="success")
+        return redirect(location=url_for("dashboard"))
+    return render_template("addproject.html", form=form)
+
+# Article Form
+
+
+class ArticleForm(Form):
+    title = StringField("Proje Başlığı", validators=[
+                        validators.Length(min=5, max=100)])
+    content = TextAreaField("Proje İçeriği", validators=[
+                            validators.Length(min=10)])
+
+@app.route("/projects")
+def projects():
+    cursor = mysql.connection.cursor()
+
+    sorgu = "SELECT * FROM projects"
+
+    result = cursor.execute(sorgu)
+
+    if result > 0:
+        return render_template("projects.html")
+    else:
+        return render_template("projects.html")
 if(__name__ == "__main__"):
     app.run(debug=True)
