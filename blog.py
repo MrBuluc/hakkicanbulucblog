@@ -21,6 +21,11 @@ class RegisterForm(Form):
     confirm = PasswordField(label="Parola Doğrula")
 
 
+class LoginForm(Form):
+    username = StringField("Kullanıcı Adı")
+    password = PasswordField("Parola")
+
+
 app = Flask(__name__)
 app.secret_key = "hbblog"
 
@@ -60,16 +65,52 @@ def register():
 
         cursor = mysql.connection.cursor()
 
-        sorgu = "INSERT into users(name,email,username,password) VALUES(%s,%s,%s,%s)"
+        sorgu = "SELECT * FROM users where username = %s"
 
-        cursor.execute(sorgu, (name, email, username, password))
-        mysql.connection.commit()
-        cursor.close()
-        flash(message="Başarıyla Kayıt Oldunuz...", category="success")
-        return redirect(location=url_for("index"))
+        result = cursor.execute(sorgu, (username,))
+
+        if result > 0:
+            flash(message="Böyle bir kullanıcı adı bulunmaktadır...",
+                  category="danger")
+            return redirect(location=url_for("register"))
+        else:
+            sorgu = "INSERT into users(name,email,username,password) VALUES(%s,%s,%s,%s)"
+
+            cursor.execute(sorgu, (name, email, username, password))
+            mysql.connection.commit()
+            cursor.close()
+            flash(message="Başarıyla Kayıt Oldunuz...", category="success")
+            return redirect(location=url_for("login"))
     else:
-
         return render_template("register.html", form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm(request.form)
+    if request.method == "POST":
+        username = form.username.data
+        password_entered = form.password.data
+
+        cursor = mysql.connection.cursor()
+
+        sorgu = "SELECT * FROM users where username = %s"
+
+        result = cursor.execute(sorgu, (username,))
+
+        if result > 0:
+            data = cursor.fetchone()
+            real_password = data["password"]
+            if sha256_crypt.verify(password_entered, real_password):
+                flash(message="Başarıyla Giriş Yaptınız...", category="success")
+                return redirect(location=url_for("index"))
+            else:
+                flash(message="Parola Hatalı...", category="danger")
+                return redirect(location=url_for("login"))
+        else:
+            flash(message="Böyle bir kullanıcı bulunmuyor...", category="danger")
+            return redirect(location="login")
+    return render_template("login.html", form=form)
 
 
 if(__name__ == "__main__"):
