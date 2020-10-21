@@ -213,5 +213,28 @@ def project(id):
         return render_template("project.html")
 
 
+@app.route("/delete/<string:id>")
+@login_required
+def delete(id):
+    cursor = mysql.connection.cursor()
+
+    sorgu = "SELECT * FROM projects where author = %s and id = %s"
+
+    result = cursor.execute(sorgu, (session["username"], id))
+
+    if result > 0:
+        sorgu1 = "DELETE FROM projects where id = %s"
+
+        cursor.execute(sorgu1, (id,))
+
+        mysql.connection.commit()
+
+        return redirect(location=url_for("dashboard"))
+    else:
+        flash(message="Böyle bir proje yok veya bu işleme yetkiniz yok...",
+              category="danger")
+        return redirect(url_for("index"))
+
+
 if(__name__ == "__main__"):
     app.run(debug=True)
