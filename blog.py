@@ -179,7 +179,8 @@ def projects():
     result = cursor.execute(sorgu)
 
     if result > 0:
-        return render_template("projects.html")
+        projects = cursor.fetchall()
+        return render_template("projects.html", projects = projects)
     else:
         return render_template("projects.html")
 if(__name__ == "__main__"):
