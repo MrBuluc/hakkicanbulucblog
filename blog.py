@@ -137,7 +137,17 @@ def logout():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    cursor = mysql.connection.cursor()
+
+    sorgu = "SELECT * FROM projects where author = %s"
+
+    result = cursor.execute(sorgu,(session["username"],))
+
+    if result > 0:
+        projects = cursor.fetchall()
+        return render_template("dashboard.html", projects = projects)
+    else:
+        return render_template("dashboard.html")
 
 
 @app.route("/addproject", methods=["GET", "POST"])

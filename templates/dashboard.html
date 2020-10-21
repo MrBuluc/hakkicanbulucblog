@@ -4,6 +4,36 @@
 <h3>Kontrol Paneli</h3>
 <big>Hoşgeldin, {{session["username"]}}</big>
 <hr>
-<a href="/addproject" class="btn btn-success">Proje Ekle</a>
+<a href="/addproject" class="btn btn-primary">Proje Ekle</a>
+<h1></h1>
+<h2></h2>
+{% if projects %}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">id</th>
+            <th scope="col">Başlık</th>
+            <th scope="col">Yazar</th>
+            <th scope="col">Tarih</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for project in projects %}
+        <tr>
+            <th scope="row">{{project.id}}</th>
+            <td><a href="/project/{{project.id}}">{{project.title}}</a></td>
+            <td>{{project.author}}</td>
+            <td>{{project.created_date}}</td>
+            <td><a href="/edit/{{project.id}}" class="btn btn-success">Güncelle</a></td>
+            <td><a href="/delete/{{project.id}}"class="btn btn-danger">Sil</a></td>
+          </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-danger">Henüz proje bulunmuyor...</div>
+{% endif %}
 
 {% endblock %}
