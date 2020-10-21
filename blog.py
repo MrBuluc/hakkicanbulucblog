@@ -275,5 +275,27 @@ def update(id):
 
         return redirect(location=url_for("dashboard"))
 
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    if request.method == "GET":
+        return redirect(location=url_for("index"))
+    else:
+        keyword = request.form.get("keyword")
+
+        cursor = mysql.connection.cursor()
+
+        sorgu = "SELECT * FROM projects where title like '%" + keyword + "%'"
+
+        result = cursor.execute(sorgu)
+
+        if result == 0:
+            flash(message="Aranan kelimeye uygun makale bulunumadı...",
+                  category="warning")
+            return redirect(location=url_for("projects"))
+        else:
+            projects = cursor.fetchall()
+            return render_template("projects.html", projects=projects)
+
+
 if(__name__ == "__main__"):
     app.run(debug=True)
