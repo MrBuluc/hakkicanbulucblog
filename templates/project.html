@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+{% if project %}
+
+<h4>{{project.title}}</h4>
+<hr>
+Yazar : {{project.author}}
+<hr>
+Tarih : {{project.created_date}}
+<hr>
+{{project.content|safe}}
+{% else %}
+<div class="alert alert-warning">Böyle bir proje bulunmuyor...</div>
+{% endif %}
+
+{% endblock %}

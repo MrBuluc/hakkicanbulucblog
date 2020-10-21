@@ -19,6 +19,8 @@ def login_required(f):
     return decorated_function
 
 # User Register Form
+
+
 class RegisterForm(Form):
     name = StringField(label="İsim Soyisim", validators=[
                        validators.Length(min=4, max=25, message="Bu alan 4 ila 25 karakter uzunluğunda olmalıdır...")])
@@ -141,11 +143,11 @@ def dashboard():
 
     sorgu = "SELECT * FROM projects where author = %s"
 
-    result = cursor.execute(sorgu,(session["username"],))
+    result = cursor.execute(sorgu, (session["username"],))
 
     if result > 0:
         projects = cursor.fetchall()
-        return render_template("dashboard.html", projects = projects)
+        return render_template("dashboard.html", projects=projects)
     else:
         return render_template("dashboard.html")
 
@@ -180,6 +182,7 @@ class ArticleForm(Form):
     content = TextAreaField("Proje İçeriği", validators=[
                             validators.Length(min=10)])
 
+
 @app.route("/projects")
 def projects():
     cursor = mysql.connection.cursor()
@@ -190,8 +193,25 @@ def projects():
 
     if result > 0:
         projects = cursor.fetchall()
-        return render_template("projects.html", projects = projects)
+        return render_template("projects.html", projects=projects)
     else:
         return render_template("projects.html")
+
+
+@app.route("/project/<string:id>")
+def project(id):
+    cursor = mysql.connection.cursor()
+
+    sorgu = "SELECT * FROM projects where id = %s"
+
+    result = cursor.execute(sorgu, (id,))
+
+    if result > 0:
+        project = cursor.fetchone()
+        return render_template("project.html", project=project)
+    else:
+        return render_template("project.html")
+
+
 if(__name__ == "__main__"):
     app.run(debug=True)

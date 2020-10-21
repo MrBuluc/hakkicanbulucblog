@@ -4,13 +4,14 @@
 <h3>Projeler</h3>
 <hr>
 {% if projects %}
-
 <ul class="list-group">
     {% for project in projects %}
-    <li class="list-group-item">{{project.title}}</li>
+    <li class="list-group-item">
+        <a href="/project/{{project.id}}">{{project.title}}</a>
+    </li>
     {% endfor %}
-  </ul>
+</ul>
 {% else %}
-<div class = "alert alert-danger">Bu blokta henüz proje bulunmuyor... </div>
+<div class="alert alert-danger">Bu blokta henüz proje bulunmuyor...</div>
 {% endif %}
 {% endblock %}
