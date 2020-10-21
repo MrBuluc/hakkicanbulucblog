@@ -154,7 +154,7 @@ def dashboard():
 
 @app.route("/addproject", methods=["GET", "POST"])
 def addproject():
-    form = ArticleForm(request.form)
+    form = ProjectForm(request.form)
     if request.method == "POST" and form.validate():
         title = form.title.data
         content = form.content.data
@@ -176,7 +176,7 @@ def addproject():
 # Article Form
 
 
-class ArticleForm(Form):
+class ProjectForm(Form):
     title = StringField("Proje Başlığı", validators=[
                         validators.Length(min=5, max=100)])
     content = TextAreaField("Proje İçeriği", validators=[
@@ -235,6 +235,45 @@ def delete(id):
               category="danger")
         return redirect(url_for("index"))
 
+
+@app.route("/edit/<string:id>", methods=["GET", "POST"])
+@login_required
+def update(id):
+    if request.method == "GET":
+        cursor = mysql.connection.cursor()
+
+        sorgu = "SELECT * FROM projects where id = %s and author = %s"
+        result = cursor.execute(sorgu, (id, session["username"]))
+
+        if result == 0:
+            flash(message="Böyle bir proje yok veya bu işleme yetkiniz yok",
+                  category="danger")
+            return redirect(location=url_for("index"))
+        else:
+            project = cursor.fetchone()
+            form = ProjectForm()
+
+            form.title.data = project["title"]
+            form.content.data = project["content"]
+            return render_template("update.html", form=form)
+
+    else:
+        form = ProjectForm(request.form)
+
+        newTitle = form.title.data
+        newContent = form.content.data
+
+        sorgu1 = "UPDATE projects SET title = %s, content = %s where id = %s"
+
+        cursor = mysql.connection.cursor()
+
+        cursor.execute(sorgu1, (newTitle, newContent, id))
+
+        mysql.connection.commit()
+
+        flash(message="Proje başarıyla güncellendi", category="success")
+
+        return redirect(location=url_for("dashboard"))
 
 if(__name__ == "__main__"):
     app.run(debug=True)
